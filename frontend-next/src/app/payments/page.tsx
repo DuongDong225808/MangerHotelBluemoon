@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowLeft, Plus, Eye, Search, X } from 'lucide-react';
-import { Header } from '@/components/Header';
+import { Sidebar } from '@/components/Sidebar';
 import { toast } from 'sonner';
 import {
     Table,
@@ -143,9 +143,9 @@ export default function PaymentPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
-            <div className="container mx-auto px-4 py-8">
+        <div className="flex min-h-screen bg-gray-50">
+            <Sidebar />
+            <div className="flex-1 p-8">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
                         <Button

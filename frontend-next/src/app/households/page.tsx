@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Grid, List, Eye, Pencil, Trash2, ArrowLeft } from 'lucide-react'
-import { Header } from '@/components/Header'
+import { Sidebar } from '@/components/Sidebar'
 import {
     Table,
     TableBody,
@@ -100,9 +100,9 @@ export default function HouseholdsPage() {
     )
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
-            <div className="container mx-auto px-4 py-8">
+        <div className="flex min-h-screen bg-gray-50">
+            <Sidebar />
+            <div className="flex-1 p-8">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
                         <Button
@@ -233,26 +233,26 @@ export default function HouseholdsPage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="bg-white rounded-lg border">
+                    <div className="bg-white rounded-lg border shadow-sm">
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>Số căn hộ</TableHead>
-                                    <TableHead>Địa chỉ</TableHead>
-                                    <TableHead>Chủ hộ</TableHead>
-                                    <TableHead>Trạng thái</TableHead>
-                                    <TableHead>Ngày tạo</TableHead>
-                                    <TableHead>Thao tác</TableHead>
+                                <TableRow className="bg-gray-50 hover:bg-gray-50">
+                                    <TableHead className="font-semibold text-gray-900">Số căn hộ</TableHead>
+                                    <TableHead className="font-semibold text-gray-900">Địa chỉ</TableHead>
+                                    <TableHead className="font-semibold text-gray-900">Chủ hộ</TableHead>
+                                    <TableHead className="font-semibold text-gray-900">Trạng thái</TableHead>
+                                    <TableHead className="font-semibold text-gray-900">Ngày tạo</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 text-center">Thao tác</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredHouseholds.map((household) => (
-                                    <TableRow key={household._id}>
-                                        <TableCell className="font-medium">
+                                    <TableRow key={household._id} className="hover:bg-gray-50">
+                                        <TableCell className="font-medium text-gray-900">
                                             {household.apartmentNumber}
                                         </TableCell>
-                                        <TableCell>{household.address}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-gray-600">{household.address}</TableCell>
+                                        <TableCell className="text-gray-600">
                                             {household.householdHead?.fullName || 'Chưa có thông tin'}
                                         </TableCell>
                                         <TableCell>
@@ -260,21 +260,21 @@ export default function HouseholdsPage() {
                                                 className={`${household.active
                                                     ? 'bg-green-100 text-green-800'
                                                     : 'bg-red-100 text-red-800'
-                                                    }`}
+                                                    } px-2 py-1 rounded-full text-xs font-medium`}
                                             >
                                                 {household.active ? 'Hoạt động' : 'Không hoạt động'}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{formatDate(household.createdAt)}</TableCell>
+                                        <TableCell className="text-gray-600">{formatDate(household.createdAt)}</TableCell>
                                         <TableCell>
-                                            <div className="flex space-x-2">
+                                            <div className="flex justify-center space-x-2">
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() =>
                                                         router.push(`/households/detail?id=${household._id}`)
                                                     }
-                                                    className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                                                    className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                                                 >
                                                     <Eye className="h-4 w-4 mr-1" />
                                                     Chi tiết
@@ -287,7 +287,7 @@ export default function HouseholdsPage() {
                                                             onClick={() =>
                                                                 router.push(`/households/edit?id=${household._id}`)
                                                             }
-                                                            className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                                                            className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
                                                         >
                                                             <Pencil className="h-4 w-4 mr-1" />
                                                             Sửa
@@ -296,7 +296,7 @@ export default function HouseholdsPage() {
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => deleteHandler(household._id)}
-                                                            className="border-red-500 text-red-600 hover:bg-red-50"
+                                                            className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
                                                         >
                                                             <Trash2 className="h-4 w-4 mr-1" />
                                                             Xóa
