@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
@@ -64,6 +64,7 @@ export default function PaymentPage() {
     const [statusFilter, setStatusFilter] = useState<string>('all');
 
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user, token } = useAuth();
 
     useEffect(() => {
@@ -71,8 +72,22 @@ export default function PaymentPage() {
             router.push('/login');
             return;
         }
-        fetchPayments();
-    }, [user, token]);
+        // Lấy tham số từ URL
+        const searchFromUrl = searchParams.get('search');
+        const householdFromUrl = searchParams.get('household');
+
+        // Nếu có tham số search, cập nhật ô tìm kiếm
+        if (searchFromUrl) {
+            setSearchTerm(searchFromUrl);
+        }
+
+        // Nếu có tham số household, lọc theo ID hộ gia đình
+        if (householdFromUrl) {
+            fetchPaymentsByHousehold(householdFromUrl);
+        } else {
+            fetchPayments();
+        }
+    }, [user, token, searchParams]);
 
     const fetchPayments = async () => {
         try {
@@ -84,6 +99,27 @@ export default function PaymentPage() {
             };
 
             const { data } = await axios.get('/api/payments', config);
+            setPayments(data);
+            setLoading(false);
+        } catch (error: any) {
+            setError(
+                error.response?.data?.message || 'Không thể tải danh sách thanh toán'
+            );
+            setLoading(false);
+            toast.error('Không thể tải danh sách thanh toán');
+        }
+    };
+
+    const fetchPaymentsByHousehold = async (householdId: string) => {
+        try {
+            setLoading(true);
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            };
+
+            const { data } = await axios.get(`/api/payments/household/${householdId}`, config);
             setPayments(data);
             setLoading(false);
         } catch (error: any) {
@@ -144,8 +180,10 @@ export default function PaymentPage() {
 
     return (
         <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 p-8">
+            <div className="fixed top-0 left-0 h-screen">
+                <Sidebar />
+            </div>
+            <div className="flex-1 ml-64 p-8">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
                         <Button
@@ -159,13 +197,15 @@ export default function PaymentPage() {
                         </Button>
                         <h1 className="text-2xl font-bold text-gray-900">Danh Sách Thanh Toán</h1>
                     </div>
-                    <Button
-                        onClick={() => router.push('/payments/create')}
-                        className="bg-green-600 hover:bg-green-700"
-                    >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Tạo Thanh Toán
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            onClick={() => router.push('/payments/create')}
+                            className="bg-green-600 hover:bg-green-700"
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Tạo Thanh Toán
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="mb-6 flex gap-4 items-center">
@@ -213,6 +253,14 @@ export default function PaymentPage() {
                         }}
                     >
                         Xóa bộ lọc
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => router.push('/payments/search')}
+                        className="hover:bg-gray-100"
+                    >
+                        <Search className="h-4 w-4 mr-2" />
+                        Tìm Kiếm Nâng Cao
                     </Button>
                 </div>
 

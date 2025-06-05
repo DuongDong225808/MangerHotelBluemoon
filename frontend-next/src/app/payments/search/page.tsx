@@ -27,6 +27,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Sidebar } from '@/components/Sidebar';
 
 interface Fee {
     _id: string;
@@ -147,9 +148,9 @@ export default function PaymentSearchPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
-            <div className="container mx-auto px-4 py-8">
+        <div className="flex min-h-screen bg-gray-50">
+            <Sidebar />
+            <div className="flex-1 p-8">
                 <div className="flex items-center gap-4 mb-6">
                     <Button
                         variant="ghost"
@@ -210,7 +211,7 @@ export default function PaymentSearchPage() {
                                             <SelectValue placeholder="Chọn loại phí" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">Tất cả loại</SelectItem>
+                                            <SelectItem value="all">Tất cả loại</SelectItem>
                                             <SelectItem value="mandatory">Bắt buộc</SelectItem>
                                             <SelectItem value="service">Dịch vụ</SelectItem>
                                             <SelectItem value="maintenance">Bảo trì</SelectItem>

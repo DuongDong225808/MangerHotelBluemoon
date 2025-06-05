@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { Header } from '@/components/Header';
+import { Sidebar } from '@/components/Sidebar';
 import { toast } from 'sonner';
 import {
     Select,
@@ -44,11 +44,14 @@ export default function PaymentCreatePage() {
     const searchParams = useSearchParams();
     const householdParam = searchParams.get('household');
     const feeParam = searchParams.get('fee');
+    const isDebtPayment = searchParams.get('isDebt') === 'true';
 
     const [households, setHouseholds] = useState<Household[]>([]);
     const [fees, setFees] = useState<Fee[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     // Form fields
     const [householdId, setHouseholdId] = useState(householdParam || '');
@@ -60,6 +63,7 @@ export default function PaymentCreatePage() {
     const [payerPhone, setPayerPhone] = useState('');
     const [receiptNumber, setReceiptNumber] = useState('');
     const [note, setNote] = useState('');
+    const [period, setPeriod] = useState('');
 
     const router = useRouter();
     const { user, token } = useAuth();
@@ -146,6 +150,23 @@ export default function PaymentCreatePage() {
     }, [householdId, fetchHouseholdHead]);
 
     useEffect(() => {
+        if (isDebtPayment) {
+            // Set to previous month by default
+            const today = new Date();
+            const lastMonth = today.getMonth() === 0 ? 11 : today.getMonth() - 1;
+            const lastMonthYear = today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear();
+            const lastMonthDate = new Date(lastMonthYear, lastMonth, 1);
+            setPeriod(lastMonthDate.toISOString().split('T')[0]);
+            setNote('Thanh toán nợ tháng trước');
+        } else {
+            // Set to current month for regular payments
+            const today = new Date();
+            const currentMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            setPeriod(currentMonthDate.toISOString().split('T')[0]);
+        }
+    }, [isDebtPayment]);
+
+    useEffect(() => {
         const generateReceiptNumber = () => {
             const date = new Date();
             const year = date.getFullYear().toString().substr(-2);
@@ -158,23 +179,16 @@ export default function PaymentCreatePage() {
     }, []);
 
     const validateForm = () => {
-        if (!householdId) {
-            toast.error('Vui lòng chọn hộ gia đình');
-            return false;
-        }
-        if (!feeId) {
-            toast.error('Vui lòng chọn loại phí');
-            return false;
-        }
-        if (!amount || parseFloat(amount) <= 0) {
-            toast.error('Số tiền phải lớn hơn 0');
-            return false;
-        }
-        if (!paymentDate) {
-            toast.error('Vui lòng chọn ngày thanh toán');
-            return false;
-        }
-        return true;
+        const errors: Record<string, string> = {};
+
+        if (!householdId) errors.householdId = 'Hộ gia đình là bắt buộc';
+        if (!feeId) errors.feeId = 'Loại phí là bắt buộc';
+        if (!amount || parseFloat(amount) <= 0) errors.amount = 'Số tiền phải lớn hơn 0';
+        if (!paymentDate) errors.paymentDate = 'Ngày thanh toán là bắt buộc';
+        if (!period) errors.period = 'Kỳ thanh toán là bắt buộc';
+
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const submitHandler = async (e: React.FormEvent) => {
@@ -185,6 +199,7 @@ export default function PaymentCreatePage() {
         try {
             setLoading(true);
             setError('');
+            setSuccess(false);
 
             const config = {
                 headers: {
@@ -192,6 +207,12 @@ export default function PaymentCreatePage() {
                     Authorization: `Bearer ${token}`,
                 },
             };
+
+            // Ensure period is a proper date string
+            let periodDate = period;
+            if (period && period.length === 7) {
+                periodDate = `${period}-01`;
+            }
 
             const paymentData = {
                 household: householdId,
@@ -202,12 +223,16 @@ export default function PaymentCreatePage() {
                 payerId,
                 payerPhone,
                 receiptNumber,
-                note
+                note,
+                period: periodDate
             };
 
             await axios.post('/api/payments', paymentData, config);
+            setSuccess(true);
             toast.success('Tạo thanh toán thành công');
-            router.push('/payments');
+            setTimeout(() => {
+                router.push('/payments');
+            }, 1500);
         } catch (error: any) {
             setError(
                 error.response?.data?.message || 'Không thể tạo thanh toán'
@@ -219,9 +244,11 @@ export default function PaymentCreatePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
-            <div className="container mx-auto px-4 py-8">
+        <div className="flex min-h-screen bg-gray-50">
+            <div className="fixed top-0 left-0 h-screen">
+                <Sidebar />
+            </div>
+            <div className="flex-1 ml-64 p-8">
                 <div className="flex items-center gap-4 mb-6">
                     <Button
                         variant="ghost"
@@ -235,6 +262,18 @@ export default function PaymentCreatePage() {
                     <h1 className="text-2xl font-bold text-gray-900">Tạo Thanh Toán Mới</h1>
                 </div>
 
+                {error && (
+                    <div className="bg-red-50 text-red-500 p-4 rounded-lg mb-6">
+                        {error}
+                    </div>
+                )}
+
+                {success && (
+                    <div className="bg-green-50 text-green-500 p-4 rounded-lg mb-6">
+                        Thanh toán đã được tạo thành công
+                    </div>
+                )}
+
                 <Card>
                     <CardContent className="p-6">
                         <form onSubmit={submitHandler} className="space-y-6">
@@ -245,7 +284,7 @@ export default function PaymentCreatePage() {
                                         value={householdId}
                                         onValueChange={setHouseholdId}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className={validationErrors.householdId ? 'border-red-500' : ''}>
                                             <SelectValue placeholder="Chọn Hộ Gia Đình" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -256,6 +295,9 @@ export default function PaymentCreatePage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    {validationErrors.householdId && (
+                                        <p className="text-sm text-red-500">{validationErrors.householdId}</p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -264,7 +306,7 @@ export default function PaymentCreatePage() {
                                         value={feeId}
                                         onValueChange={setFeeId}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className={validationErrors.feeId ? 'border-red-500' : ''}>
                                             <SelectValue placeholder="Chọn Loại Phí" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -275,6 +317,9 @@ export default function PaymentCreatePage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    {validationErrors.feeId && (
+                                        <p className="text-sm text-red-500">{validationErrors.feeId}</p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -286,8 +331,11 @@ export default function PaymentCreatePage() {
                                         onChange={(e) => setAmount(e.target.value)}
                                         min="0"
                                         step="0.01"
-                                        required
+                                        className={validationErrors.amount ? 'border-red-500' : ''}
                                     />
+                                    {validationErrors.amount && (
+                                        <p className="text-sm text-red-500">{validationErrors.amount}</p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -297,8 +345,28 @@ export default function PaymentCreatePage() {
                                         id="paymentDate"
                                         value={paymentDate}
                                         onChange={(e) => setPaymentDate(e.target.value)}
-                                        required
+                                        className={validationErrors.paymentDate ? 'border-red-500' : ''}
                                     />
+                                    {validationErrors.paymentDate && (
+                                        <p className="text-sm text-red-500">{validationErrors.paymentDate}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="period">{isDebtPayment ? 'Kỳ Thanh Toán (Nợ)' : 'Kỳ Thanh Toán'}</Label>
+                                    <Input
+                                        type="month"
+                                        id="period"
+                                        value={period.substring(0, 7)}
+                                        onChange={(e) => setPeriod(e.target.value)}
+                                        className={validationErrors.period ? 'border-red-500' : ''}
+                                    />
+                                    <p className="text-sm text-gray-500">
+                                        {isDebtPayment ? 'Chọn tháng cần thanh toán nợ' : 'Chọn tháng áp dụng khoản thanh toán này'}
+                                    </p>
+                                    {validationErrors.period && (
+                                        <p className="text-sm text-red-500">{validationErrors.period}</p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">

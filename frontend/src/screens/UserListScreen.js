@@ -13,32 +13,32 @@ const UserListScreen = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const navigate = useNavigate();
   const { userInfo } = useContext(AuthContext);
-  
+
   useEffect(() => {
     // Chỉ admin mới được truy cập trang này
     if (!userInfo || userInfo.role !== 'admin') {
       navigate('/');
       return;
     }
-    
+
     fetchUsers();
   }, [userInfo, navigate]);
-  
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      
+
       const config = {
         headers: {
           Authorization: `Bearer ${userInfo.token}`,
         },
       };
-      
+
       const { data } = await axios.get('/api/users', config);
-      
+
       setUsers(data);
       setLoading(false);
     } catch (error) {
@@ -50,20 +50,20 @@ const UserListScreen = () => {
       setLoading(false);
     }
   };
-  
+
   const deleteHandler = async (id) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này không?')) {
       try {
         setLoading(true);
-        
+
         const config = {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
           },
         };
-        
+
         await axios.delete(`/api/users/${id}`, config);
-        
+
         setSuccess('Đã xóa người dùng thành công');
         fetchUsers();
       } catch (error) {
@@ -76,7 +76,7 @@ const UserListScreen = () => {
       }
     }
   };
-  
+
   // Lọc danh sách người dùng theo từ khóa tìm kiếm
   const filteredUsers = users.filter(
     (user) => {
@@ -89,7 +89,7 @@ const UserListScreen = () => {
       );
     }
   );
-  
+
   // Hàm định dạng tên vai trò
   const formatRole = (role) => {
     switch (role) {
@@ -103,7 +103,7 @@ const UserListScreen = () => {
         return role;
     }
   };
-  
+
   return (
     <>
       <Row className="align-items-center mb-3">
@@ -111,7 +111,7 @@ const UserListScreen = () => {
           <h1>Quản Lý Người Dùng</h1>
         </Col>
         <Col className="text-end">
-          <Button 
+          <Button
             className="btn-sm"
             onClick={() => navigate('/users/create')}
           >

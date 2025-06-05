@@ -46,8 +46,8 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center">
             <Card className="w-full max-w-md p-6 shadow-lg">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-blue-600">Blue Moon Hotel</h1>
-                    <p className="text-gray-600 mt-2">Hệ thống quản lý khách sạn</p>
+                    <h1 className="text-3xl font-bold text-blue-600">Blue Moon Apartment</h1>
+                    <p className="text-gray-600 mt-2">Hệ thống quản lý chung cư</p>
                 </div>
 
                 <h2 className="text-center text-2xl font-bold mb-6">Đăng nhập</h2>

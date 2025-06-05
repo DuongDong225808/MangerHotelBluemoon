@@ -7,7 +7,7 @@ import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { Header } from '@/components/Header';
+import { Sidebar } from '@/components/Sidebar';
 import { toast } from 'sonner';
 import { Badge } from "@/components/ui/badge";
 import {
@@ -89,11 +89,11 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'paid':
-                return <Badge className="bg-green-500">Đã thanh toán</Badge>;
+                return <Badge className="bg-green-100 text-green-800">Đã thanh toán</Badge>;
             case 'overdue':
-                return <Badge className="bg-red-500">Quá hạn</Badge>;
+                return <Badge className="bg-red-100 text-red-800">Quá hạn</Badge>;
             default:
-                return <Badge className="bg-yellow-500">Chưa thanh toán</Badge>;
+                return <Badge className="bg-yellow-100 text-yellow-800">Chưa thanh toán</Badge>;
         }
     };
 
@@ -111,9 +111,11 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
-            <div className="container mx-auto px-4 py-8">
+        <div className="flex min-h-screen bg-gray-50">
+            <div className="fixed top-0 left-0 h-screen">
+                <Sidebar />
+            </div>
+            <div className="flex-1 ml-64 p-8">
                 <div className="flex items-center gap-4 mb-6">
                     <Button
                         variant="ghost"
@@ -140,103 +142,70 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
                         <Card className="md:col-span-2">
                             <CardContent className="p-6">
                                 <h2 className="text-xl font-semibold mb-4">Thông Tin Cơ Bản</h2>
-                                <Table>
-                                    <TableBody>
-                                        <TableRow>
-                                            <TableCell className="font-medium">ID</TableCell>
-                                            <TableCell>{payment._id}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Tên Phí</TableCell>
-                                            <TableCell>{payment.fee?.name}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Căn Hộ</TableCell>
-                                            <TableCell>{payment.household?.apartmentNumber}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Số Tiền</TableCell>
-                                            <TableCell>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">ID</p>
+                                            <p className="text-sm">{payment._id}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Tên Phí</p>
+                                            <p className="text-sm">{payment.fee?.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Căn Hộ</p>
+                                            <p className="text-sm">{payment.household?.apartmentNumber}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Số Tiền</p>
+                                            <p className="text-sm">
                                                 {payment.amount?.toLocaleString('vi-VN', {
                                                     style: 'currency',
                                                     currency: 'VND',
                                                 })}
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Phương Thức</TableCell>
-                                            <TableCell>{getMethodText(payment.method)}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Trạng Thái</TableCell>
-                                            <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Ngày Thanh Toán</TableCell>
-                                            <TableCell>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Phương Thức</p>
+                                            <p className="text-sm">{getMethodText(payment.method)}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Trạng Thái</p>
+                                            <div className="mt-1">{getStatusBadge(payment.status)}</div>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Ngày Thanh Toán</p>
+                                            <p className="text-sm">
                                                 {payment.paymentDate
                                                     ? new Date(payment.paymentDate).toLocaleDateString('vi-VN')
                                                     : 'N/A'}
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Ngày Tạo</TableCell>
-                                            <TableCell>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Ngày Tạo</p>
+                                            <p className="text-sm">
                                                 {new Date(payment.createdAt).toLocaleDateString('vi-VN')}
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Cập Nhật Lần Cuối</TableCell>
-                                            <TableCell>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Cập Nhật Lần Cuối</p>
+                                            <p className="text-sm">
                                                 {new Date(payment.updatedAt).toLocaleDateString('vi-VN')}
-                                            </TableCell>
-                                        </TableRow>
+                                            </p>
+                                        </div>
                                         {payment.note && (
-                                            <TableRow>
-                                                <TableCell className="font-medium">Ghi Chú</TableCell>
-                                                <TableCell>{payment.note}</TableCell>
-                                            </TableRow>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-500">Ghi Chú</p>
+                                                <p className="text-sm">{payment.note}</p>
+                                            </div>
                                         )}
-                                    </TableBody>
-                                </Table>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
 
-                        <Card>
-                            <CardContent className="p-6">
-                                <h2 className="text-xl font-semibold mb-4">Thông Tin Bổ Sung</h2>
-                                <Table>
-                                    <TableBody>
-                                        {payment.dueDate && (
-                                            <TableRow>
-                                                <TableCell className="font-medium">Hạn Thanh Toán</TableCell>
-                                                <TableCell>
-                                                    {new Date(payment.dueDate).toLocaleDateString('vi-VN')}
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                        {payment.collector && (
-                                            <TableRow>
-                                                <TableCell className="font-medium">Người Thu</TableCell>
-                                                <TableCell>{payment.collector.name}</TableCell>
-                                            </TableRow>
-                                        )}
-                                        {payment.receiptNumber && (
-                                            <TableRow>
-                                                <TableCell className="font-medium">Số Biên Lai</TableCell>
-                                                <TableCell>{payment.receiptNumber}</TableCell>
-                                            </TableRow>
-                                        )}
-                                        {payment.payerName && (
-                                            <TableRow>
-                                                <TableCell className="font-medium">Người Thanh Toán</TableCell>
-                                                <TableCell>{payment.payerName}</TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
                     </div>
                 ) : (
                     <div className="text-center text-gray-500">

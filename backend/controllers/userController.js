@@ -16,7 +16,7 @@ exports.registerUser = async (req, res) => {
     const userExists = await User.findOne({ username });
 
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'Tên đăng nhập đã tồn tại' });
     }
 
     // Create user
@@ -26,7 +26,8 @@ exports.registerUser = async (req, res) => {
       fullName,
       role,
       email,
-      phone
+      phone,
+      active: true // Mặc định tài khoản mới là active
     });
 
     if (user) {
@@ -36,14 +37,15 @@ exports.registerUser = async (req, res) => {
         fullName: user.fullName,
         role: user.role,
         email: user.email,
-        phone: user.phone
+        phone: user.phone,
+        active: user.active
       });
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(400).json({ message: 'Dữ liệu người dùng không hợp lệ' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: 'Lỗi server' });
   }
 };
 
@@ -97,6 +99,7 @@ exports.loginUser = async (req, res) => {
         role: user.role,
         email: user.email,
         phone: user.phone,
+        active: user.active,
         token
       }
     });
@@ -117,13 +120,22 @@ exports.getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id).select('-password');
 
     if (user) {
-      res.json(user);
+      res.json({
+        success: true,
+        data: user
+      });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server'
+    });
   }
 };
 
@@ -146,19 +158,29 @@ exports.updateUserProfile = async (req, res) => {
       const updatedUser = await user.save();
 
       res.json({
-        _id: updatedUser._id,
-        username: updatedUser.username,
-        fullName: updatedUser.fullName,
-        role: updatedUser.role,
-        email: updatedUser.email,
-        phone: updatedUser.phone
+        success: true,
+        data: {
+          _id: updatedUser._id,
+          username: updatedUser.username,
+          fullName: updatedUser.fullName,
+          role: updatedUser.role,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          active: updatedUser.active
+        }
       });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server'
+    });
   }
 };
 
@@ -168,10 +190,16 @@ exports.updateUserProfile = async (req, res) => {
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.find({}).select('-password');
-    res.json(users);
+    res.json({
+      success: true,
+      data: users
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server'
+    });
   }
 };
 
@@ -182,17 +210,35 @@ exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
-    if (user) {
-      // Instead of deleting, set active to false
-      user.active = false;
-      await user.save();
-      res.json({ message: 'User deactivated' });
-    } else {
-      res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
     }
+
+    // Không cho phép xóa tài khoản của chính mình
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Không thể xóa tài khoản của chính mình'
+      });
+    }
+
+    // Instead of deleting, set active to false
+    user.active = false;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Đã vô hiệu hóa người dùng'
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server'
+    });
   }
 };
 
@@ -204,13 +250,22 @@ exports.getUserById = async (req, res) => {
     const user = await User.findById(req.params.id).select('-password');
 
     if (user) {
-      res.json(user);
+      res.json({
+        success: true,
+        data: user
+      });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server'
+    });
   }
 };
 
@@ -221,21 +276,49 @@ exports.updateUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
-    if (user) {
-      user.username = req.body.username || user.username;
-      user.fullName = req.body.fullName || user.fullName;
-      user.role = req.body.role || user.role;
-      user.email = req.body.email || user.email;
-      user.phone = req.body.phone || user.phone;
-      user.active = req.body.active !== undefined ? req.body.active : user.active;
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
 
-      if (req.body.password) {
-        user.password = req.body.password;
+    // Không cho phép sửa username
+    if (req.body.username && req.body.username !== user.username) {
+      return res.status(400).json({
+        success: false,
+        message: 'Không thể thay đổi tên đăng nhập'
+      });
+    }
+
+    // Cập nhật thông tin
+    if (req.body.fullName) user.fullName = req.body.fullName;
+    if (req.body.role) user.role = req.body.role;
+    if (req.body.email !== undefined) user.email = req.body.email;
+    if (req.body.phone !== undefined) user.phone = req.body.phone;
+
+    // Chỉ cập nhật active nếu được chỉ định
+    if (req.body.active !== undefined) {
+      // Không cho phép vô hiệu hóa tài khoản của chính mình
+      if (user._id.toString() === req.user._id.toString()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không thể vô hiệu hóa tài khoản của chính mình'
+        });
       }
+      user.active = req.body.active;
+    }
 
-      const updatedUser = await user.save();
+    // Cập nhật mật khẩu nếu có
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
 
-      res.json({
+    const updatedUser = await user.save();
+
+    res.json({
+      success: true,
+      data: {
         _id: updatedUser._id,
         username: updatedUser.username,
         fullName: updatedUser.fullName,
@@ -243,12 +326,14 @@ exports.updateUser = async (req, res) => {
         email: updatedUser.email,
         phone: updatedUser.phone,
         active: updatedUser.active
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
+      },
+      message: 'Cập nhật người dùng thành công'
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Update user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server: ' + (error.message || 'Không thể cập nhật người dùng')
+    });
   }
 }; 

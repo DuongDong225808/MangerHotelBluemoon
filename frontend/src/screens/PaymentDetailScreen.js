@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Row, Col, ListGroup, Card, Button, Container, Badge } from 'react-bootstrap';
+import { Row, Col, ListGroup, Badge, Container } from 'react-bootstrap';
 import axios from 'axios';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
@@ -9,16 +9,13 @@ import AuthContext from '../context/AuthContext';
 const PaymentDetailScreen = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [payment, setPayment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   const { userInfo } = useContext(AuthContext);
-  
-  // Check if user can edit (admin or accountant)
-  const canEdit = userInfo && (userInfo.role === 'admin' || userInfo.role === 'accountant');
-  
+
   useEffect(() => {
     const fetchPayment = async () => {
       try {
@@ -47,7 +44,7 @@ const PaymentDetailScreen = () => {
       navigate('/login');
     }
   }, [id, navigate, userInfo]);
-  
+
   return (
     <Container>
       <Link to="/payments" className="btn btn-light my-3">
@@ -61,7 +58,7 @@ const PaymentDetailScreen = () => {
         <>
           <h1>Chi tiết thanh toán</h1>
           <Row>
-            <Col md={8}>
+            <Col md={12}>
               <ListGroup variant="flush">
                 <ListGroup.Item>
                   <h2>Thông tin cơ bản</h2>
@@ -98,23 +95,23 @@ const PaymentDetailScreen = () => {
                             payment.status === 'paid'
                               ? 'success'
                               : payment.status === 'overdue'
-                              ? 'danger'
-                              : 'warning'
+                                ? 'danger'
+                                : 'warning'
                           }
                         >
                           {payment.status === 'paid'
                             ? 'Đã thanh toán'
                             : payment.status === 'overdue'
-                            ? 'Quá hạn'
-                            : 'Chưa thanh toán'}
+                              ? 'Quá hạn'
+                              : 'Chưa thanh toán'}
                         </Badge>
                       </p>
                       <p>
                         <strong>Ngày thanh toán: </strong>
                         {payment.paymentDate
                           ? new Date(payment.paymentDate).toLocaleDateString(
-                              'vi-VN'
-                            )
+                            'vi-VN'
+                          )
                           : 'N/A'}
                       </p>
                       <p>
@@ -129,26 +126,6 @@ const PaymentDetailScreen = () => {
                   </Row>
                 </ListGroup.Item>
               </ListGroup>
-            </Col>
-            <Col md={4}>
-              <Card>
-                <ListGroup variant="flush">
-                  <ListGroup.Item>
-                    <h2>Thao tác</h2>
-                  </ListGroup.Item>
-                  <ListGroup.Item>
-                    {canEdit && (
-                      <Button
-                        type="button"
-                        className="btn btn-block"
-                        onClick={() => navigate(`/payments/${payment._id}/edit`)}
-                      >
-                        Chỉnh sửa
-                      </Button>
-                    )}
-                  </ListGroup.Item>
-                </ListGroup>
-              </Card>
             </Col>
           </Row>
         </>

@@ -7,7 +7,7 @@ import { fetchApi } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Pencil, Trash2, X } from 'lucide-react';
+import { Loader2, Search, Pencil, Trash2, X, Plus } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { toast } from 'sonner';
 import {
@@ -45,6 +45,7 @@ export default function UserListPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
+    const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
     const router = useRouter();
     const { user, token } = useAuth();
@@ -56,13 +57,28 @@ export default function UserListPage() {
         }
 
         fetchUsers();
-    }, [user, token]);
+    }, [user, token, router]);
+
+    useEffect(() => {
+        const handleRouteChange = () => {
+            fetchUsers();
+        };
+
+        window.addEventListener('popstate', handleRouteChange);
+        return () => {
+            window.removeEventListener('popstate', handleRouteChange);
+        };
+    }, []);
 
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const data = await fetchApi('/api/users');
-            setUsers(data);
+            const response = await fetchApi('/api/users');
+            if (response.success) {
+                setUsers(response.data);
+            } else {
+                toast.error(response.message || 'Không thể tải danh sách người dùng');
+            }
             setLoading(false);
         } catch (error: any) {
             toast.error(
@@ -85,12 +101,16 @@ export default function UserListPage() {
         if (!userToDelete) return;
 
         try {
-            await fetchApi(`/api/users/${userToDelete._id}`, {
+            const response = await fetchApi(`/api/users/${userToDelete._id}`, {
                 method: 'DELETE'
             });
 
-            toast.success('Xóa người dùng thành công');
-            fetchUsers();
+            if (response.success) {
+                toast.success(response.message || 'Xóa người dùng thành công');
+                fetchUsers();
+            } else {
+                toast.error(response.message || 'Không thể xóa người dùng');
+            }
         } catch (error: any) {
             toast.error(
                 error.response?.data?.message || 'Không thể xóa người dùng'
@@ -101,13 +121,41 @@ export default function UserListPage() {
         }
     };
 
-    const filteredUsers = users.filter(user =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleStatusChange = async (userId: string, currentStatus: boolean) => {
+        try {
+            setUpdatingStatus(userId);
+            const response = await fetchApi(`/api/users/${userId}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    active: !currentStatus
+                })
+            });
+
+            if (response.success) {
+                toast.success(response.message || 'Cập nhật trạng thái thành công');
+                fetchUsers();
+            } else {
+                toast.error(response.message || 'Không thể cập nhật trạng thái');
+            }
+        } catch (error: any) {
+            toast.error(
+                error.response?.data?.message || 'Không thể cập nhật trạng thái'
+            );
+        } finally {
+            setUpdatingStatus(null);
+        }
+    };
+
+    const filteredUsers = users.filter(user => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            user.username?.toLowerCase().includes(searchLower) ||
+            user.fullName?.toLowerCase().includes(searchLower) ||
+            user.email?.toLowerCase().includes(searchLower) ||
+            user.phone?.toLowerCase().includes(searchLower) ||
+            user.role?.toLowerCase().includes(searchLower)
+        );
+    });
 
     const getRoleLabel = (role: string) => {
         switch (role) {
@@ -127,7 +175,16 @@ export default function UserListPage() {
             <Sidebar />
             <div className="flex-1 p-8">
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Quản Lý Người Dùng</h1>
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-2xl font-bold text-gray-900">Quản Lý Người Dùng</h1>
+                        <Button
+                            onClick={() => router.push('/user/create')}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Thêm Người Dùng
+                        </Button>
+                    </div>
                 </div>
 
                 <Card>
@@ -195,12 +252,22 @@ export default function UserListPage() {
                                                     <TableCell>{user.email || 'Chưa cung cấp'}</TableCell>
                                                     <TableCell>{user.phone || 'Chưa cung cấp'}</TableCell>
                                                     <TableCell>
-                                                        <span className={`px-2 py-1 rounded-full text-xs ${user.active
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                            {user.active ? 'Đang hoạt động' : 'Đã vô hiệu hóa'}
-                                                        </span>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleStatusChange(user._id, user.active)}
+                                                            disabled={updatingStatus === user._id || user._id === user?._id}
+                                                            className={`px-2 py-1 rounded-full text-xs ${user.active
+                                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                                }`}
+                                                        >
+                                                            {updatingStatus === user._id ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                user.active ? 'Đang hoạt động' : 'Đã vô hiệu hóa'
+                                                            )}
+                                                        </Button>
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">

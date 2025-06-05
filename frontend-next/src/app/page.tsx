@@ -53,7 +53,7 @@ const LandingPage: React.FC = () => {
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
             className="text-white text-2xl font-bold"
           >
-            Blue Moon Hotel
+            Blue Moon Apartment
           </motion.div>
           <div className="flex space-x-8 items-center">
             <motion.a
@@ -100,7 +100,7 @@ const LandingPage: React.FC = () => {
             transition={{ delay: 0.6, duration: 0.8 }}
             className="text-xl text-gray-200 mb-10 max-w-3xl"
           >
-            Khách sạn Blue Moon tự hào mang đến cho bạn những trải nghiệm nghỉ dưỡng sang trọng với dịch vụ 5 sao và tiện nghi hiện đại.
+            Chung cư Blue Moon tự hào mang đến cho bạn những trải nghiệm nghỉ dưỡng sang trọng với dịch vụ 5 sao và tiện nghi hiện đại.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -109,9 +109,7 @@ const LandingPage: React.FC = () => {
             className="flex flex-col sm:flex-row gap-4"
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/login" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md text-lg font-medium transition-colors flex items-center justify-center">
-                Đặt phòng ngay <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+
             </motion.div>
             <motion.a
               whileHover={{ scale: 1.05 }}
@@ -147,9 +145,9 @@ const LandingPage: React.FC = () => {
       <section id="gioi-thieu" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16" data-aos="fade-up">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Về Khách Sạn Blue Moon</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Về Chung cư Blue Moon</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Blue Moon Hotel là khách sạn 5 sao hiện đại tại trung tâm thành phố, mang đến cho bạn những trải nghiệm nghỉ dưỡng tuyệt vời.
+              Blue Moon Apartment là chung cư 5 sao hiện đại tại trung tâm thành phố, mang đến cho bạn những trải nghiệm nghỉ dưỡng tuyệt vời.
             </p>
           </div>
 
@@ -250,7 +248,7 @@ const LandingPage: React.FC = () => {
           <div className="text-center mb-16" data-aos="fade-up">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Vị Trí Của Chúng Tôi</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Blue Moon Hotel tọa lạc tại vị trí đắc địa, dễ dàng tiếp cận các điểm tham quan và tiện ích của thành phố.
+              Blue Moon Apartment tọa lạc tại vị trí đắc địa, dễ dàng tiếp cận các điểm tham quan và tiện ích của thành phố.
             </p>
           </div>
 
@@ -356,17 +354,13 @@ const LandingPage: React.FC = () => {
             <h2 className="text-3xl font-bold text-white mb-6">
               Sẵn sàng cho kỳ nghỉ tuyệt vời?
             </h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-              Đặt phòng ngay hôm nay để nhận được ưu đãi đặc biệt và trải nghiệm dịch vụ 5 sao tại Blue Moon Hotel.
-            </p>
+
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               data-aos="fade-up"
             >
-              <Link href="/login" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-md text-lg font-medium transition-colors inline-block shadow-md">
-                Đặt phòng ngay
-              </Link>
+
             </motion.div>
           </div>
         </div>
@@ -376,9 +370,9 @@ const LandingPage: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between mb-8">
             <div className="mb-8 md:mb-0" data-aos="fade-up" data-aos-delay="100">
-              <h3 className="text-2xl font-bold mb-4">Blue Moon Hotel</h3>
+              <h3 className="text-2xl font-bold mb-4">Blue Moon Apartment</h3>
               <p className="text-gray-400 max-w-xs">
-                Khách sạn 5 sao với dịch vụ và tiện nghi hàng đầu tại Hà Nội.
+                Chung cư 5 sao với dịch vụ và tiện nghi hàng đầu tại Hà Nội.
               </p>
               <div className="mt-6 flex space-x-4">
                 <a href="#" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-blue-600 transition-colors">
@@ -502,7 +496,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="pt-8 border-t border-gray-800 text-center text-gray-500">
-            <p>&copy; {new Date().getFullYear()} Blue Moon Hotel. Đã đăng ký bản quyền.</p>
+            <p>&copy; {new Date().getFullYear()} Blue Moon Apartment. Đã đăng ký bản quyền.</p>
           </div>
         </div>
       </footer>

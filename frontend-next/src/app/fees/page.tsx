@@ -130,8 +130,10 @@ export default function FeesPage() {
 
     return (
         <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 p-8">
+            <div className="fixed top-0 left-0 h-screen">
+                <Sidebar />
+            </div>
+            <div className="flex-1 ml-64 p-8">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
                         <Button

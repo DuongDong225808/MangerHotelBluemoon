@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { fetchApi } from '@/lib/api';
@@ -19,7 +19,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { use } from 'react';
 
 interface ValidationErrors {
     username?: string;
@@ -29,10 +28,7 @@ interface ValidationErrors {
     role?: string;
 }
 
-export default function UserEditPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const isEditMode = true;
-
+export default function UserCreatePage() {
     // Form fields
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -50,52 +46,18 @@ export default function UserEditPage({ params }: { params: Promise<{ id: string 
     const router = useRouter();
     const { user, token } = useAuth();
 
-    useEffect(() => {
-        // Chỉ admin mới được truy cập trang này
-        if (!user || !token || user.role !== 'admin') {
-            router.push('/dashboard');
-            return;
-        }
-
-        fetchUserDetails();
-    }, [user, token, id]);
-
-    const fetchUserDetails = async () => {
-        try {
-            setLoading(true);
-            const response = await fetchApi(`/api/users/${id}`);
-
-            if (response.success) {
-                const userData = response.data;
-                setUsername(userData.username);
-                setFullName(userData.fullName);
-                setEmail(userData.email || '');
-                setPhone(userData.phone || '');
-                setRole(userData.role);
-                setActive(userData.active);
-            } else {
-                toast.error(response.message || 'Không thể tải thông tin người dùng');
-            }
-            setLoading(false);
-        } catch (error: any) {
-            toast.error(
-                error.response?.data?.message || 'Không thể tải thông tin người dùng'
-            );
-            setLoading(false);
-        }
-    };
-
     const validateForm = () => {
         const errors: ValidationErrors = {};
 
-        if (!username.trim()) errors.username = 'Tên đăng nhập là bắt buộc';
-        if (password && password.trim().length < 6) {
+        if (!username) errors.username = 'Tên đăng nhập là bắt buộc';
+        if (!password) errors.password = 'Mật khẩu là bắt buộc';
+        if (password && password.length < 6) {
             errors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
         }
-        if (password && password !== confirmPassword) {
+        if (password !== confirmPassword) {
             errors.confirmPassword = 'Mật khẩu xác nhận không khớp';
         }
-        if (!fullName.trim()) errors.fullName = 'Họ tên là bắt buộc';
+        if (!fullName) errors.fullName = 'Họ tên là bắt buộc';
         if (!role) errors.role = 'Vai trò là bắt buộc';
 
         setValidationErrors(errors);
@@ -110,52 +72,29 @@ export default function UserEditPage({ params }: { params: Promise<{ id: string 
         try {
             setLoading(true);
 
-            // Chuẩn bị dữ liệu
-            const userData: {
-                username: string;
-                fullName: string;
-                role: string;
-                email?: string;
-                phone?: string;
-                active: boolean;
-                password?: string;
-            } = {
+            const userData = {
                 username,
+                password,
                 fullName,
                 role,
-                active
+                email,
+                phone
             };
 
-            // Chỉ thêm các trường có giá trị
-            if (email.trim()) userData.email = email.trim();
-            if (phone.trim()) userData.phone = phone.trim();
-            if (password.trim()) userData.password = password.trim();
-
-            console.log('Sending update data:', userData);
-
-            const response = await fetchApi(`/api/users/${id}`, {
-                method: 'PUT',
+            const response = await fetchApi('/api/users', {
+                method: 'POST',
                 body: JSON.stringify(userData)
             });
 
-            console.log('Update response:', response);
-
-            if (response.success) {
-                toast.success(response.message || 'Cập nhật người dùng thành công');
-                // Chuyển hướng ngay lập tức về trang danh sách
-                router.push('/user');
-            } else {
-                toast.error(response.message || 'Không thể cập nhật người dùng');
+            if (response) {
+                toast.success('Tạo người dùng thành công');
+                setTimeout(() => {
+                    router.push('/user');
+                }, 1500);
             }
         } catch (error: any) {
-            console.error('Update error:', error);
-            console.error('Error details:', {
-                message: error.message,
-                response: error.response?.data,
-                status: error.response?.status
-            });
             toast.error(
-                error.response?.data?.message || 'Không thể cập nhật người dùng'
+                error.response?.data?.message || 'Không thể tạo người dùng'
             );
         } finally {
             setLoading(false);
@@ -177,7 +116,7 @@ export default function UserEditPage({ params }: { params: Promise<{ id: string 
                         Quay lại Danh sách người dùng
                     </Button>
                     <h1 className="text-2xl font-bold text-gray-900">
-                        Chỉnh Sửa Người Dùng
+                        Thêm Người Dùng Mới
                     </h1>
                 </div>
 
@@ -193,16 +132,16 @@ export default function UserEditPage({ params }: { params: Promise<{ id: string 
                                     id="username"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    disabled={true}
-                                    className="bg-gray-100"
+                                    className={validationErrors.username ? "border-red-500" : ""}
                                 />
+                                {validationErrors.username && (
+                                    <p className="text-sm text-red-500">{validationErrors.username}</p>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="password">
-                                        Mật khẩu mới (để trống nếu không đổi)
-                                    </Label>
+                                    <Label htmlFor="password">Mật khẩu</Label>
                                     <Input
                                         id="password"
                                         type="password"
@@ -303,7 +242,7 @@ export default function UserEditPage({ params }: { params: Promise<{ id: string 
                                             Đang xử lý...
                                         </>
                                     ) : (
-                                        'Cập Nhật'
+                                        'Tạo Người Dùng'
                                     )}
                                 </Button>
                             </div>
@@ -313,4 +252,4 @@ export default function UserEditPage({ params }: { params: Promise<{ id: string 
             </div>
         </div>
     );
-} 
+}

@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, ArrowLeft, Save, Plus, Home } from 'lucide-react'
 import { Header } from '@/components/Header'
+import { Sidebar } from '@/components/Sidebar'
 
 interface FormData {
     apartmentNumber: string
@@ -173,10 +174,9 @@ export default function HouseholdEditPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
-            <div className="container mx-auto px-4 py-8 max-w-3xl">
-                {/* Header Section */}
+        <div className="flex min-h-screen bg-gray-50">
+            <Sidebar />
+            <div className="flex-1 p-8">
                 <div className="flex items-center gap-4 mb-6">
                     <Button
                         variant="ghost"
@@ -333,8 +333,8 @@ export default function HouseholdEditPage() {
                                     type="submit"
                                     disabled={loading}
                                     className={`flex-1 ${isEditMode
-                                            ? 'bg-orange-600 hover:bg-orange-700'
-                                            : 'bg-green-600 hover:bg-green-700'
+                                        ? 'bg-orange-600 hover:bg-orange-700'
+                                        : 'bg-green-600 hover:bg-green-700'
                                         }`}
                                 >
                                     {loading ? (

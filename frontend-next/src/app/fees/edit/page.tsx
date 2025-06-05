@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { Sidebar } from '@/components/Sidebar';
 
 interface ValidationErrors {
     feeCode?: string;
@@ -170,9 +171,9 @@ export default function FeeEditPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
-            <div className="container mx-auto px-4 py-8">
+        <div className="flex min-h-screen bg-gray-50">
+            <Sidebar />
+            <div className="flex-1 p-8">
                 <div className="flex items-center gap-4 mb-6">
                     <Button
                         variant="ghost"

@@ -9,41 +9,41 @@ import axios from 'axios';
 const HouseholdDetailScreen = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [household, setHousehold] = useState(null);
   const [residents, setResidents] = useState([]);
   const [feeStatus, setFeeStatus] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   const { userInfo } = useContext(AuthContext);
-  
+
   useEffect(() => {
     fetchHouseholdData();
   }, [id, userInfo]);
-  
+
   const fetchHouseholdData = async () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const config = {
         headers: {
           Authorization: `Bearer ${userInfo.token}`,
         },
       };
-      
+
       // Make all requests in parallel
       const [householdResponse, residentsResponse, feeStatusResponse] = await Promise.all([
         axios.get(`/api/households/${id}`, config),
         axios.get(`/api/households/${id}/residents`, config),
         axios.get(`/api/payments/household/${id}/fee-status`, config)
       ]);
-      
+
       setHousehold(householdResponse.data);
       setResidents(residentsResponse.data);
       setFeeStatus(feeStatusResponse.data.feeStatus);
-      
+
     } catch (error) {
       setError(
         error.response && error.response.data.message
@@ -54,18 +54,18 @@ const HouseholdDetailScreen = () => {
       setLoading(false);
     }
   };
-  
+
   const handleAddResident = () => {
     navigate(`/residents/create?household=${household._id}`);
   };
 
-  const handleCreatePayment = (feeId) => {
-    navigate(`/payments/create?household=${household._id}&fee=${feeId}`);
+  const handleCreatePayment = (feeId, isDebt = false) => {
+    navigate(`/payments/create?household=${household._id}&fee=${feeId}&isDebt=${isDebt}`);
   };
 
   // Helper function to get badge variant based on status
   const getStatusBadge = (status) => {
-    switch(status) {
+    switch (status) {
       case 'paid':
         return <Badge bg="success">Đã thanh toán</Badge>;
       case 'pending':
@@ -76,13 +76,13 @@ const HouseholdDetailScreen = () => {
         return <Badge bg="secondary">Không áp dụng</Badge>;
     }
   };
-  
+
   return (
     <>
       <Link to='/households' className='btn btn-light my-3'>
         <i className="fas fa-arrow-left"></i> Quay lại Danh sách Hộ dân
       </Link>
-      
+
       {loading ? (
         <Loader />
       ) : error ? (
@@ -153,13 +153,13 @@ const HouseholdDetailScreen = () => {
                 </Card.Footer>
               </Card>
             </Col>
-            
+
             <Col md={7}>
               <Card className="mb-4">
                 <Card.Header className="d-flex justify-content-between align-items-center">
                   <h4>Cư dân ({residents.length})</h4>
-                  <Button 
-                    variant="success" 
+                  <Button
+                    variant="success"
                     size="sm"
                     onClick={handleAddResident}
                   >
@@ -216,7 +216,7 @@ const HouseholdDetailScreen = () => {
               </Card>
             </Col>
           </Row>
-          
+
           <Row>
             <Col>
               <Card className="mb-4">
@@ -258,8 +258,8 @@ const HouseholdDetailScreen = () => {
                             </td>
                             <td>
                               {fee.currentMonthStatus === 'pending' && (
-                                <Button 
-                                  variant="success" 
+                                <Button
+                                  variant="success"
                                   size="sm"
                                   onClick={() => handleCreatePayment(fee._id)}
                                 >
@@ -267,10 +267,10 @@ const HouseholdDetailScreen = () => {
                                 </Button>
                               )}
                               {fee.lastMonthStatus === 'overdue' && fee.currentMonthStatus === 'paid' && (
-                                <Button 
-                                  variant="warning" 
+                                <Button
+                                  variant="warning"
                                   size="sm"
-                                  onClick={() => handleCreatePayment(fee._id)}
+                                  onClick={() => handleCreatePayment(fee._id, true)}
                                 >
                                   <i className="fas fa-exclamation-circle"></i> Thanh toán nợ
                                 </Button>
