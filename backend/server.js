@@ -12,10 +12,38 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration
+const corsOptions = {
+  origin: ['http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  credentials: true,
+  maxAge: 86400 // 24 hours
+};
+
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  next();
+});
+
+// Response logging middleware
+app.use((req, res, next) => {
+  const oldJson = res.json;
+  res.json = function (data) {
+    console.log('Response:', data);
+    return oldJson.call(this, data);
+  };
+  next();
+});
 
 // Only use morgan in development
 if (process.env.NODE_ENV !== 'production') {
@@ -27,7 +55,11 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bluemoon_ap
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-  .then(() => console.log('MongoDB Connected'))
+  .then(() => {
+    console.log('MongoDB Connected Successfully');
+    console.log('Database:', mongoose.connection.name);
+    console.log('Host:', mongoose.connection.host);
+  })
   .catch(err => {
     console.error('Failed to connect to MongoDB', err);
     if (process.env.NODE_ENV === 'production') {
@@ -53,7 +85,7 @@ app.get('/api', (req, res) => {
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/build')));
-  
+
   app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../frontend', 'build', 'index.html'));
   });
@@ -61,19 +93,19 @@ if (process.env.NODE_ENV === 'production') {
 
 // Error handler middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).json({
+    success: false,
     message: err.message || 'Something went wrong!',
     error: process.env.NODE_ENV === 'production' ? {} : err
   });
 });
 
-// For traditional server environments
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`API available at http://localhost:${PORT}/api`);
+});
 
 // Export the Express API for Vercel serverless deployment
 module.exports = app; 

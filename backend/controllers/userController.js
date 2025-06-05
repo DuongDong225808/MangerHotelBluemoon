@@ -58,36 +58,54 @@ exports.loginUser = async (req, res) => {
     const user = await User.findOne({ username });
 
     if (!user) {
-      return res.status(401).json({ message: 'Tên đăng nhập không tồn tại' });
+      return res.status(401).json({
+        success: false,
+        message: 'Tên đăng nhập không tồn tại'
+      });
     }
 
     // Check if user is active
     if (!user.active) {
-      return res.status(401).json({ message: 'Tài khoản đã bị vô hiệu hóa' });
+      return res.status(401).json({
+        success: false,
+        message: 'Tài khoản đã bị vô hiệu hóa'
+      });
     }
 
     // Kiểm tra mật khẩu
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Mật khẩu không đúng' });
+      return res.status(401).json({
+        success: false,
+        message: 'Mật khẩu không đúng'
+      });
     }
 
     // Update last login
     user.lastLogin = Date.now();
     await user.save();
 
-    res.json({
-      _id: user._id,
-      username: user.username,
-      fullName: user.fullName,
-      role: user.role,
-      email: user.email,
-      phone: user.phone,
-      token: generateToken(user._id)
+    // Generate token
+    const token = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        _id: user._id,
+        username: user.username,
+        fullName: user.fullName,
+        role: user.role,
+        email: user.email,
+        phone: user.phone,
+        token
+      }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi server' });
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server'
+    });
   }
 };
 
@@ -97,7 +115,7 @@ exports.loginUser = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
-    
+
     if (user) {
       res.json(user);
     } else {
@@ -120,7 +138,7 @@ exports.updateUserProfile = async (req, res) => {
       user.fullName = req.body.fullName || user.fullName;
       user.email = req.body.email || user.email;
       user.phone = req.body.phone || user.phone;
-      
+
       if (req.body.password) {
         user.password = req.body.password;
       }

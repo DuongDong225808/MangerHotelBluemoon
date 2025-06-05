@@ -30,11 +30,11 @@ exports.protect = async (req, res, next) => {
         return res.status(401).json({ message: 'Not authorized, invalid token' });
       }
     }
-    
+
     if (!token) {
       // Fallback cho trường hợp kiểm thử
       const adminUser = await User.findOne({ role: 'admin' }).select('-password');
-      
+
       if (adminUser) {
         req.user = adminUser;
         next();
@@ -54,13 +54,13 @@ exports.authorize = (...roles) => {
     if (!req.user) {
       return res.status(401).json({ message: 'Not authorized' });
     }
-    
+
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        message: `Role ${req.user.role} is not authorized to access this resource` 
+      return res.status(403).json({
+        message: `Role ${req.user.role} is not authorized to access this resource`
       });
     }
-    
+
     next();
   };
 }; 
