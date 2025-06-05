@@ -186,10 +186,7 @@ export default function HouseholdsPage() {
                                     </div>
 
                                     <div className="text-sm text-gray-600 mb-4 space-y-1">
-                                        <p>
-                                            <span className="font-medium">Chủ hộ:</span>{' '}
-                                            {household.householdHead?.fullName || 'Chưa có thông tin'}
-                                        </p>
+                                
                                         <p>
                                             <span className="font-medium">Ngày tạo:</span>{' '}
                                             {formatDate(household.createdAt)}

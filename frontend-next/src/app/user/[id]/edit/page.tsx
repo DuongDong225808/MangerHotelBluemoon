@@ -135,7 +135,7 @@ export default function UserEditPage({ params }: { params: Promise<{ id: string 
 
             const response = await fetchApi(`/api/users/${id}`, {
                 method: 'PUT',
-                body: JSON.stringify(userData)
+                body: userData
             });
 
             console.log('Update response:', response);

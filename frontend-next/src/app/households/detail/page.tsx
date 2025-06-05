@@ -302,7 +302,7 @@ export default function HouseholdDetailPage() {
                                                 <TableHead>CCCD/CMND</TableHead>
                                                 <TableHead>Giới tính</TableHead>
                                                 <TableHead>Trạng thái</TableHead>
-                                                <TableHead className="text-center">Thao tác</TableHead>
+                                            
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -321,16 +321,7 @@ export default function HouseholdDetailPage() {
                                                             {resident.active ? 'Hoạt động' : 'Không hoạt động'}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleViewResidentDetails(resident._id)}
-                                                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                        </Button>
-                                                    </TableCell>
+                                                   
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -345,7 +336,7 @@ export default function HouseholdDetailPage() {
                                 <div className="flex justify-between items-center">
                                     <CardTitle className="flex items-center gap-2">
                                         <CreditCard className="h-5 w-5" />
-                                        Trạng thái Thanh toán
+                                        Lịch sử thanh toán
                                     </CardTitle>
                                     <Button
                                         onClick={() => router.push(`/payments?household=${household._id}&search=${household.apartmentNumber}`)}
@@ -358,66 +349,6 @@ export default function HouseholdDetailPage() {
                                     </Button>
                                 </div>
                             </CardHeader>
-                            <CardContent>
-                                {feeStatus.length === 0 ? (
-                                    <div className="text-center text-gray-500 py-8">
-                                        Không có khoản phí nào được áp dụng cho hộ gia đình này
-                                    </div>
-                                ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Loại phí</TableHead>
-                                                <TableHead>Số tiền</TableHead>
-                                                <TableHead>Tháng hiện tại</TableHead>
-                                                <TableHead>Tháng trước</TableHead>
-                                                <TableHead className="text-center">Thao tác</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {feeStatus.map((fee) => (
-                                                <TableRow key={fee._id}>
-                                                    <TableCell className="font-medium">{fee.name}</TableCell>
-                                                    <TableCell>{formatCurrency(fee.amount)}</TableCell>
-                                                    <TableCell>{getStatusBadge(fee.currentMonthStatus)}</TableCell>
-                                                    <TableCell>
-                                                        {fee.lastMonthStatus && getStatusBadge(fee.lastMonthStatus)}
-                                                        {fee.lastMonthStatus === 'overdue' && (
-                                                            <span className="ml-2 text-red-500">
-                                                                <i className="fas fa-exclamation-triangle"></i>
-                                                            </span>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {fee.currentMonthStatus === 'pending' && (
-                                                            <Button
-                                                                onClick={() => handleCreatePayment(fee._id)}
-                                                                size="sm"
-                                                                variant="outline"
-                                                                className="border-green-500 text-green-600 hover:bg-green-50"
-                                                            >
-                                                                <CreditCard className="h-4 w-4 mr-2" />
-                                                                Thanh toán
-                                                            </Button>
-                                                        )}
-                                                        {fee.lastMonthStatus === 'overdue' && fee.currentMonthStatus === 'paid' && (
-                                                            <Button
-                                                                onClick={() => handleCreatePayment(fee._id, true)}
-                                                                size="sm"
-                                                                variant="outline"
-                                                                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
-                                                            >
-                                                                <CreditCard className="h-4 w-4 mr-2" />
-                                                                Thanh toán nợ
-                                                            </Button>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                )}
-                            </CardContent>
                         </Card>
                     </div>
                 </div>

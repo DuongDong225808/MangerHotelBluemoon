@@ -83,7 +83,8 @@ export default function UserCreatePage() {
 
             const response = await fetchApi('/api/users', {
                 method: 'POST',
-                body: JSON.stringify(userData)
+                body: userData,
+                
             });
 
             if (response) {

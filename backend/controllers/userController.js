@@ -16,7 +16,7 @@ exports.registerUser = async (req, res) => {
     const userExists = await User.findOne({ username });
 
     if (userExists) {
-      return res.status(400).json({ message: 'Tên đăng nhập đã tồn tại' });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     // Create user
@@ -26,8 +26,7 @@ exports.registerUser = async (req, res) => {
       fullName,
       role,
       email,
-      phone,
-      active: true // Mặc định tài khoản mới là active
+      phone
     });
 
     if (user) {
@@ -37,15 +36,14 @@ exports.registerUser = async (req, res) => {
         fullName: user.fullName,
         role: user.role,
         email: user.email,
-        phone: user.phone,
-        active: user.active
+        phone: user.phone
       });
     } else {
-      res.status(400).json({ message: 'Dữ liệu người dùng không hợp lệ' });
+      res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Lỗi server' });
+    res.status(500).json({ message: 'Server Error' });
   }
 };
 
@@ -99,8 +97,7 @@ exports.loginUser = async (req, res) => {
         role: user.role,
         email: user.email,
         phone: user.phone,
-        active: user.active,
-        token
+        token: token
       }
     });
   } catch (error) {
@@ -165,8 +162,7 @@ exports.updateUserProfile = async (req, res) => {
           fullName: updatedUser.fullName,
           role: updatedUser.role,
           email: updatedUser.email,
-          phone: updatedUser.phone,
-          active: updatedUser.active
+          phone: updatedUser.phone
         }
       });
     } else {

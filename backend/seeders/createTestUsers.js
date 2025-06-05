@@ -40,8 +40,8 @@ const createTestUsers = async () => {
         phone: '0912345678'
       },
       {
-        username: 'staff2',
-        password: 'staff123',
+        username: 'ketoan',
+        password: 'ketoan123',
         role: 'staff',
         fullName: 'Nguyen Van F',
         phone: '0987654123'
